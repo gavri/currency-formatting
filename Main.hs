@@ -9,8 +9,20 @@ commafy n = T.reverse $  intercalate "," (chunksOf 3 (T.reverse n))
 commafyIntegerPart n = T.concat [(commafy integerPart), ".", fractionalPart]
         where (integerPart: fractionalPart: _) = splitOn "." n
 
-numberToCurrency :: (Ord a, Num a, PrintfArg a) => a -> Text
-numberToCurrency n = T.concat [sign n, commafyIntegerPart $ T.pack (printf "$%.2f" (abs n))]
+data CurrencyFormattingOptions = CurrencyFormattingOptions {
+  precision :: Int
+}
+
+defaultCurrencyFormattingOptions = CurrencyFormattingOptions {
+  precision = 2
+}
+
+numberToCurrencyRaw :: (Ord a, Num a, PrintfArg a) => a -> CurrencyFormattingOptions -> Text
+numberToCurrencyRaw n options  = T.concat [sign n, commafyIntegerPart $ (T.pack (printf ("$%." ++ (show (precision options)) ++ "f") (abs n)))]
+
+numberToCurrency n = numberToCurrencyRaw n defaultCurrencyFormattingOptions
+
+numberToCurrencyWithOptions n options = numberToCurrencyRaw n options
 
 sign n = if isNegative then "-" else ""
         where isNegative = n < 0
@@ -20,4 +32,5 @@ main = runTestTT $ test $ [
   , "significant digits" ~: "$5.00" ~=? numberToCurrency(5 :: Double)
   , "decimal rounding" ~: "$5.12" ~=? numberToCurrency(5.117 :: Double)
   , "commas" ~: "$1,234,567,890.50" ~=? numberToCurrency(1234567890.50 :: Double)
-  , "negative" ~: "-$1,234,567,890.50" ~=? numberToCurrency(-1234567890.50 :: Double)]
+  , "negative" ~: "-$1,234,567,890.50" ~=? numberToCurrency(-1234567890.50 :: Double)
+  , "precision" ~: "-$1,234,567,890.507" ~=? numberToCurrencyWithOptions (-1234567890.5067 :: Double) (defaultCurrencyFormattingOptions {precision = 3})]
