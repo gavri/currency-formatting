@@ -10,7 +10,9 @@ commafyIntegerPart n = T.concat [(commafy integerPart), ".", fractionalPart]
         where (integerPart: fractionalPart: _) = splitOn "." n
 
 numberToCurrency :: (Ord a, Num a, PrintfArg a) => a -> Text
-numberToCurrency n = T.concat [(if isNegative then "-" else ""), commafyIntegerPart $ T.pack (printf "$%.2f" (abs n))]
+numberToCurrency n = T.concat [sign n, commafyIntegerPart $ T.pack (printf "$%.2f" (abs n))]
+
+sign n = if isNegative then "-" else ""
         where isNegative = n < 0
 
 main = runTestTT $ test $ [
