@@ -13,14 +13,16 @@ commafyIntegerPart n = case (Prelude.length components) of
 
 data CurrencyFormattingOptions = CurrencyFormattingOptions {
   precision :: Int
+  , unit :: Text
 }
 
 defaultCurrencyFormattingOptions = CurrencyFormattingOptions {
   precision = 2
+  , unit = "$"
 }
 
 numberToCurrencyRaw :: (Ord a, Num a, PrintfArg a) => a -> CurrencyFormattingOptions -> Text
-numberToCurrencyRaw n options  = T.concat [sign n, commafyIntegerPart $ (T.pack (printf ("$%." ++ (show (precision options)) ++ "f") (abs n)))]
+numberToCurrencyRaw n options  = T.concat [sign n, (unit options), commafyIntegerPart (T.pack (printf ("%." ++ (show (precision options)) ++ "f") (abs n)))]
 
 numberToCurrency n = numberToCurrencyRaw n defaultCurrencyFormattingOptions
 
@@ -36,4 +38,5 @@ main = runTestTT $ test $ [
   , "commas" ~: "$1,234,567,890.50" ~=? numberToCurrency(1234567890.50 :: Double)
   , "negative" ~: "-$1,234,567,890.50" ~=? numberToCurrency(-1234567890.50 :: Double)
   , "precision" ~: "-$1,234,567,890.507" ~=? numberToCurrencyWithOptions (-1234567890.5067 :: Double) (defaultCurrencyFormattingOptions {precision = 3})
-  , "zero precision" ~: "-$1,234,567,891" ~=? numberToCurrencyWithOptions (-1234567890.5067 :: Double) (defaultCurrencyFormattingOptions {precision = 0})]
+  , "zero precision" ~: "-$1,234,567,891" ~=? numberToCurrencyWithOptions (-1234567890.5067 :: Double) (defaultCurrencyFormattingOptions {precision = 0})
+  , "unit" ~: "£5.12" ~=? numberToCurrencyWithOptions (5.12 :: Double) defaultCurrencyFormattingOptions {unit = "£"}]
