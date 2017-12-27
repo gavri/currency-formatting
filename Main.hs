@@ -16,6 +16,8 @@ data CurrencyFormattingOptions = CurrencyFormattingOptions {
   , unit :: Text
   , delimiter :: Text
   , separator :: Text
+  , format :: Text
+  , negative_format :: Text
 }
 
 defaultCurrencyFormattingOptions = CurrencyFormattingOptions {
@@ -23,16 +25,20 @@ defaultCurrencyFormattingOptions = CurrencyFormattingOptions {
   , unit = "$"
   , delimiter = ","
   , separator = "."
+  , format = "%u%n"
+  , negative_format = "-%u%n"
 }
 
 numberToCurrencyRaw :: (Ord a, Num a, PrintfArg a) => a -> CurrencyFormattingOptions -> Text
-numberToCurrencyRaw n options  = T.concat [sign n, (unit options), commafyIntegerPart (T.pack (printf ("%." ++ (show (precision options)) ++ "f") (abs n))) (delimiter options) (separator options)]
+numberToCurrencyRaw n options  = replace "%u" (unit options) (replace "%n" magnitude format)
+  where magnitude = commafyIntegerPart (T.pack (printf ("%." ++ (show (precision options)) ++ "f") (abs n))) (delimiter options) (separator options)
+        format = formatFor n options
 
 numberToCurrency n = numberToCurrencyRaw n defaultCurrencyFormattingOptions
 
 numberToCurrencyWithOptions n options = numberToCurrencyRaw n options
 
-sign n = if isNegative then "-" else ""
+formatFor n options = if isNegative then (negative_format options) else (format options)
   where isNegative = n < 0
 
 main = runTestTT $ test $ [
@@ -46,4 +52,6 @@ main = runTestTT $ test $ [
   , "unit" ~: "£5.12" ~=? numberToCurrencyWithOptions (5.12 :: Double) defaultCurrencyFormattingOptions {unit = "£"}
   , "delimiter" ~: "$1;234;567;890.50" ~=? numberToCurrencyWithOptions (1234567890.50 :: Double) defaultCurrencyFormattingOptions {delimiter = ";"}
   , "delimiter and zero precision" ~: "$1;234;567;891" ~=? numberToCurrencyWithOptions (1234567890.5067 :: Double) defaultCurrencyFormattingOptions {delimiter = ";", precision = 0}
-  , "separator" ~: "$1,234,567,890;50" ~=? numberToCurrencyWithOptions (1234567890.50 :: Double) defaultCurrencyFormattingOptions {separator = ";"}]
+  , "separator" ~: "$1,234,567,890;50" ~=? numberToCurrencyWithOptions (1234567890.50 :: Double) defaultCurrencyFormattingOptions {separator = ";"}
+  , "format" ~: "1,234,567,890.50 €" ~=? numberToCurrencyWithOptions (1234567890.50 :: Double) defaultCurrencyFormattingOptions {format = "%n %u", unit = "€"}
+  , "negative_format" ~: "($1,234,567,890.50)" ~=? numberToCurrencyWithOptions (-1234567890.50 :: Double) defaultCurrencyFormattingOptions {negative_format = "(%u%n)"}]
