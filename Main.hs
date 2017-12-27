@@ -30,9 +30,9 @@ defaultCurrencyFormattingOptions = CurrencyFormattingOptions {
 }
 
 numberToCurrencyWithOptions :: (Ord a, Num a, PrintfArg a) => a -> CurrencyFormattingOptions -> Text
-numberToCurrencyWithOptions n options  = (replace "%u" (unit options) . replace "%n" magnitude) chosen_format
+numberToCurrencyWithOptions n options  = (replace "%u" (unit options) . replace "%n" magnitude) chosenFormat
   where magnitude = commafyIntegerPart (T.pack (printf ("%." ++ (show (precision options)) ++ "f") (abs n))) (delimiter options) (separator options)
-        chosen_format = if (n < 0) then (negativeFormat options) else (format options)
+        chosenFormat = if (n < 0) then (negativeFormat options) else (format options)
 
 numberToCurrency n = numberToCurrencyWithOptions n defaultCurrencyFormattingOptions
 
