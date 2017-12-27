@@ -16,9 +16,10 @@ convert n = convertWithOptions n defaultCurrencyFormattingOptions
 
 commafy n delimiter = T.reverse $  intercalate delimiter (chunksOf 3 (T.reverse n))
 commafyIntegerPart n delimiter separator = case (Prelude.length components) of
-  1 -> commafy (Prelude.head components) delimiter
-  otherwise -> T.concat [(commafy (Prelude.head components) delimiter), separator, (Prelude.last components)]
+  1 -> commafiedIntegerPart
+  otherwise -> T.concat [commafiedIntegerPart, separator, (Prelude.last components)]
   where components = splitOn "." n
+        commafiedIntegerPart = commafy (Prelude.head components) delimiter
 
 data CurrencyFormattingOptions = CurrencyFormattingOptions {
   precision :: Int
