@@ -17,7 +17,7 @@ data CurrencyFormattingOptions = CurrencyFormattingOptions {
   , delimiter :: Text
   , separator :: Text
   , format :: Text
-  , negative_format :: Text
+  , negativeFormat :: Text
 }
 
 defaultCurrencyFormattingOptions = CurrencyFormattingOptions {
@@ -26,13 +26,13 @@ defaultCurrencyFormattingOptions = CurrencyFormattingOptions {
   , delimiter = ","
   , separator = "."
   , format = "%u%n"
-  , negative_format = "-%u%n"
+  , negativeFormat = "-%u%n"
 }
 
 numberToCurrencyRaw :: (Ord a, Num a, PrintfArg a) => a -> CurrencyFormattingOptions -> Text
 numberToCurrencyRaw n options  = (replace "%u" (unit options) . replace "%n" magnitude) chosen_format
   where magnitude = commafyIntegerPart (T.pack (printf ("%." ++ (show (precision options)) ++ "f") (abs n))) (delimiter options) (separator options)
-        chosen_format = if (n < 0) then (negative_format options) else (format options)
+        chosen_format = if (n < 0) then (negativeFormat options) else (format options)
 
 numberToCurrency n = numberToCurrencyRaw n defaultCurrencyFormattingOptions
 
@@ -51,4 +51,4 @@ main = runTestTT $ test $ [
   , "delimiter and zero precision" ~: "$1;234;567;891" ~=? numberToCurrencyWithOptions (1234567890.5067 :: Double) defaultCurrencyFormattingOptions {delimiter = ";", precision = 0}
   , "separator" ~: "$1,234,567,890;50" ~=? numberToCurrencyWithOptions (1234567890.50 :: Double) defaultCurrencyFormattingOptions {separator = ";"}
   , "format" ~: "1,234,567,890.50 €" ~=? numberToCurrencyWithOptions (1234567890.50 :: Double) defaultCurrencyFormattingOptions {format = "%n %u", unit = "€"}
-  , "negative_format" ~: "($1,234,567,890.50)" ~=? numberToCurrencyWithOptions (-1234567890.50 :: Double) defaultCurrencyFormattingOptions {negative_format = "(%u%n)"}]
+  , "negativeFormat" ~: "($1,234,567,890.50)" ~=? numberToCurrencyWithOptions (-1234567890.50 :: Double) defaultCurrencyFormattingOptions {negativeFormat = "(%u%n)"}]
