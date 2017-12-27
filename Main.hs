@@ -29,14 +29,12 @@ defaultCurrencyFormattingOptions = CurrencyFormattingOptions {
   , negativeFormat = "-%u%n"
 }
 
-numberToCurrencyRaw :: (Ord a, Num a, PrintfArg a) => a -> CurrencyFormattingOptions -> Text
-numberToCurrencyRaw n options  = (replace "%u" (unit options) . replace "%n" magnitude) chosen_format
+numberToCurrencyWithOptions :: (Ord a, Num a, PrintfArg a) => a -> CurrencyFormattingOptions -> Text
+numberToCurrencyWithOptions n options  = (replace "%u" (unit options) . replace "%n" magnitude) chosen_format
   where magnitude = commafyIntegerPart (T.pack (printf ("%." ++ (show (precision options)) ++ "f") (abs n))) (delimiter options) (separator options)
         chosen_format = if (n < 0) then (negativeFormat options) else (format options)
 
-numberToCurrency n = numberToCurrencyRaw n defaultCurrencyFormattingOptions
-
-numberToCurrencyWithOptions n options = numberToCurrencyRaw n options
+numberToCurrency n = numberToCurrencyWithOptions n defaultCurrencyFormattingOptions
 
 main = runTestTT $ test $ [
   "simple" ~: "$5.12" ~=? numberToCurrency(5.12 :: Double)
