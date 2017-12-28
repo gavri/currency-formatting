@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module NumberToCurrency (convert, convertWithOptions, defaultCurrencyFormattingOptions,
+module NumberToCurrency (convert, convertWithOptions, options,
                         precision, unit, delimiter, separator, format, negativeFormat) where
 
 import Text.Printf
@@ -13,7 +13,7 @@ convertWithOptions num options  = (replace "%u" u . replace "%n" n) chosenFormat
         magnitudeFormat = "%." ++ (show (precision options)) ++ "f"
         magnitude = abs num
 
-convert n = convertWithOptions n defaultCurrencyFormattingOptions
+convert n = convertWithOptions n defaultOptions
 
 commafyIntegerPart n delimiter separator = if hasFractionalPart
                                              then commafiedIntegerPart `append` separator `append` fractionalPart
@@ -35,7 +35,7 @@ data CurrencyFormattingOptions = CurrencyFormattingOptions {
   , negativeFormat :: Text
 }
 
-defaultCurrencyFormattingOptions = CurrencyFormattingOptions {
+defaultOptions = CurrencyFormattingOptions {
   precision = 2
   , unit = "$"
   , delimiter = ","
@@ -43,3 +43,5 @@ defaultCurrencyFormattingOptions = CurrencyFormattingOptions {
   , format = "%u%n"
   , negativeFormat = "-%u%n"
 }
+
+options = defaultOptions
