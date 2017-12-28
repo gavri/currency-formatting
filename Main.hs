@@ -16,12 +16,16 @@ convertWithOptions num options  = (replace "%u" u . replace "%n" n) chosenFormat
 
 convert n = convertWithOptions n defaultCurrencyFormattingOptions
 
+commafyIntegerPart n delimiter separator = if hasFractionalPart
+                                             then commafiedIntegerPart `append` separator `append` fractionalPart
+                                             else commafiedIntegerPart
+  where commafiedIntegerPart = commafy integerPart delimiter
+        integerPart = head components
+        fractionalPart = last components
+        hasFractionalPart = length components /= 1
+        components = splitOn "." n
+
 commafy n delimiter = T.reverse $  intercalate delimiter (chunksOf 3 (T.reverse n))
-commafyIntegerPart n delimiter separator = case (Prelude.length components) of
-  1 -> commafiedIntegerPart
-  otherwise -> T.concat [commafiedIntegerPart, separator, (Prelude.last components)]
-  where components = splitOn "." n
-        commafiedIntegerPart = commafy (Prelude.head components) delimiter
 
 data CurrencyFormattingOptions = CurrencyFormattingOptions {
   precision :: Int
