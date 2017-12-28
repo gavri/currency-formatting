@@ -3,14 +3,16 @@
 module NumberToCurrency (convert, convertWithOptions, defaultCurrencyFormattingOptions) where
 
 import Text.Printf
-import Data.Text as T
+import Data.Text as T hiding (head, last, length)
 
 import Test.HUnit
 
-convertWithOptions :: (Ord a, Num a, PrintfArg a) => a -> CurrencyFormattingOptions -> Text
-convertWithOptions n options  = (replace "%u" (unit options) . replace "%n" magnitude) chosenFormat
-  where magnitude = commafyIntegerPart (T.pack (printf ("%." ++ (show (precision options)) ++ "f") (abs n))) (delimiter options) (separator options)
-        chosenFormat = if (n < 0) then (negativeFormat options) else (format options)
+convertWithOptions num options  = (replace "%u" u . replace "%n" n) chosenFormat
+  where n = commafyIntegerPart (pack (printf magnitudeFormat magnitude)) (delimiter options) (separator options)
+        u = unit options
+        chosenFormat = if (num < 0) then (negativeFormat options) else (format options)
+        magnitudeFormat = "%." ++ (show (precision options)) ++ "f"
+        magnitude = abs num
 
 convert n = convertWithOptions n defaultCurrencyFormattingOptions
 
