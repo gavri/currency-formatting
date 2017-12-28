@@ -7,10 +7,10 @@ import Text.Printf
 import Data.Text as T hiding (head, last, length)
 
 convertWithOptions num options  = (replace "%u" u . replace "%n" n) chosenFormat
-  where n = commafyIntegerPart (pack (printf magnitudeFormat magnitude)) (delimiter options) (separator options)
+  where n = commafyIntegerPart (pack (printf magnitudeTemplate magnitude)) (delimiter options) (separator options)
         u = unit options
         chosenFormat = if (num < 0) then (negativeFormat options) else (format options)
-        magnitudeFormat = "%." ++ (show (precision options)) ++ "f"
+        magnitudeTemplate = "%." ++ (show (precision options)) ++ "f"
         magnitude = abs num
 
 convert n = convertWithOptions n defaultOptions
